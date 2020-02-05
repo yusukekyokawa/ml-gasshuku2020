@@ -222,3 +222,21 @@ ax = plt.axes(projection='3d')
 ax.scatter3D(embedding[:, 0], embedding[:, 1], embedding[:, 2], c=labels.cpu())
 ```
 
+### 4. CNNの判断根拠の可視化
+Grad
+
+
+## 問題1 Fashion MNIST
+
+上記のMNISTと同様にFashion MNISTのデータで学習を行ってください．
+
+
+
+# 参考文献
+
+GradCAMの実装
+
+https://qiita.com/sasayabaku/items/fd8923cf0e769104cc95
+
+https://www.noconote.work/entry/2019/01/12/231723
+
