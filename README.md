@@ -4,6 +4,7 @@
 
 ### 1. データ読み込み
 
+
 ```python
 import torch
 import torchvision
@@ -31,10 +32,10 @@ testloader = torch.utils.data.DataLoader(testset,
                                             num_workers=2)
 
 classes = tuple(np.linspace(0, 9, 10, dtype=np.uint8))
-```
+\```
 
 ### データの可視化
-```python
+​```python
 # データの可視化
 import matplotlib.pyplot as plt
 import numpy as np
@@ -120,9 +121,11 @@ GPU = True
 device = torch.device("cuda" if GPU else "cpu")
 ```
 
+```python
+
 #### モデルのインスタンス化
 
-```python
+​```python
 model = Model()
 model = model.to(device)	
 ```
@@ -147,19 +150,19 @@ for epoch in range(10):  # loop over the dataset multiple times
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
-
+    
         inputs = torch.tensor(inputs, dtype=torch.float).to(device)
         labels = torch.tensor(labels, dtype=torch.long).to(device)
-
+    
         # zero the parameter gradients
         optimizer.zero_grad()
-
+    
         # forward + backward + optimize
         outputs = model(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
-
+    
         # print statistics
         running_loss += loss.item()
         if i % 2000 == 1999:    # print every 2000 mini-batches
@@ -183,7 +186,7 @@ with open('model.pkl', 'wb') as f:
 
 ### 学習したモデルで特徴抽出
 
-```python
+​```python
 ### 学習したモデルで特徴抽出を行う．
 # 保存したモデルをload
 with open('model.pkl', 'rb') as f:
@@ -235,7 +238,7 @@ class GradCam:
 
     def save_gradient(self, grad):
         self.gradient = grad
-
+    
     def __call__(self, x):
         image_size = (x.size(-1), x.size(-2))
         feature_maps = []
@@ -245,7 +248,7 @@ class GradCam:
             img = img - np.min(img)
             if np.max(img) != 0:
                 img = img / np.max(img)
-
+    
             feature = x[i].unsqueeze(0)
             
             for name, module in self.model.named_children():
@@ -260,7 +263,7 @@ class GradCam:
             one_hot, _ = classes.max(dim=-1)
             self.model.zero_grad()
             one_hot.backward()
-
+    
             weight = self.gradient.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
             
             mask = F.relu((weight * self.feature).sum(dim=1)).squeeze(0)
@@ -308,7 +311,7 @@ plt.imshow(feature_image.resize((28, 28)))
 
 ### 5. モデル構造の可視化
 
-```python
+​```python
 !pip3 install torchsummary
 # モデル構造の可視化
 from torchsummary import summary
