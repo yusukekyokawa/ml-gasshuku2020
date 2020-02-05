@@ -60,7 +60,7 @@ testloader = torch.utils.data.DataLoader(testset,
                                             batch_size=100,
                                             shuffle=False, 
                                             num_workers=2)
-教師ラベルの作成
+# 7. 教師ラベルの作成
 classes = tuple(np.linspace(0, 9, 10, dtype=np.uint8))
 ```
 
