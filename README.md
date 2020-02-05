@@ -11,7 +11,7 @@ import torchvision
 import torchvision.transforms as transforms
 import numpy as np
 transform = transforms.Compose(
-    [transforms.ToTensor(),
+    [transforms.To	Tensor(),
      transforms.Normalize((0.5, ), (0.5, ))])
 trainset = torchvision.datasets.MNIST(root='./data', 
                                         train=True,
@@ -137,8 +137,6 @@ optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 ```
 
 
-
-
 ### 3. 学習
 
 ```python
@@ -209,7 +207,7 @@ for epoch in range(2):
 
 ### 抽出した特徴をUMAPで可視化
 
-​```python
+```python
 import umap
 from mpl_toolkits import mplot3d
 %matplotlib inline
@@ -321,7 +319,7 @@ summary(net, input_size=(1, 28, 28))
 
 ### 6. 畳み込みフィルタの可視化
 
-​```python
+```python
 def plot_filters_single_channel_big(t):
     
     #setting the rows and columns
