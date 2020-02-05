@@ -3,9 +3,73 @@
 ## MNISTでの練習
 
 ### 1. データの読み込み
-MNISTデータセットを読み込みます．
+<details>
+<summary>コードはこちら</summary>  
+<p>  
+  
+```python
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, ), (0.5, ))])
+trainset = torchvision.datasets.FashionMNIST(root='./data', 
+                                        train=True,
+                                        download=True,
+                                        transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset,
+                                            batch_size=100,
+                                            shuffle=True,
+                                            num_workers=2)
+
+testset = torchvision.datasets.FashionMNIST(root='./data', 
+                                        train=False, 
+                                        download=True, 
+                                        transform=transform)
+testloader = torch.utils.data.DataLoader(testset, 
+                                            batch_size=100,
+                                            shuffle=False, 
+                                            num_workers=2)
+
+classes = tuple(np.linspace(0, 9, 10, dtype=np.uint8))
+```
+
+</p>
+</details>
+
+
 ### 2. データセットの可視化
-データセットを見てみましょう
+
+<details>
+<summary>コードはこちら</summary>
+<p>
+  
+```python
+# データの可視化
+import matplotlib.pyplot as plt
+import numpy as np
+
+# functions to show an image
+
+
+def imshow(img):
+    img = img / 2 + 0.5     # unnormalize
+    npimg = img.numpy()
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
+
+
+# get some random training images
+dataiter = iter(trainloader)
+images, labels = dataiter.next()
+
+# show images
+imshow(torchvision.utils.make_grid(images))
+# print labels
+print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
+```
+
+</p>  
+</details>
+
 ### 3. モデルの定義
 LeNetを実装してください．
 
