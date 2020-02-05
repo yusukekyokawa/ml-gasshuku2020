@@ -32,10 +32,10 @@ testloader = torch.utils.data.DataLoader(testset,
                                             num_workers=2)
 
 classes = tuple(np.linspace(0, 9, 10, dtype=np.uint8))
-\```
+```
 
 ### データの可視化
-​```python
+```python
 # データの可視化
 import matplotlib.pyplot as plt
 import numpy as np
@@ -186,7 +186,7 @@ with open('model.pkl', 'wb') as f:
 
 ### 学習したモデルで特徴抽出
 
-​```python
+```python
 ### 学習したモデルで特徴抽出を行う．
 # 保存したモデルをload
 with open('model.pkl', 'rb') as f:
@@ -209,7 +209,7 @@ for epoch in range(2):
 
 ### 抽出した特徴をUMAPで可視化
 
-```python
+​```python
 import umap
 from mpl_toolkits import mplot3d
 %matplotlib inline
@@ -311,7 +311,7 @@ plt.imshow(feature_image.resize((28, 28)))
 
 ### 5. モデル構造の可視化
 
-​```python
+```python
 !pip3 install torchsummary
 # モデル構造の可視化
 from torchsummary import summary
@@ -321,7 +321,7 @@ summary(net, input_size=(1, 28, 28))
 
 ### 6. 畳み込みフィルタの可視化
 
-```python
+​```python
 def plot_filters_single_channel_big(t):
     
     #setting the rows and columns
