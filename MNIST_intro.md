@@ -141,10 +141,89 @@ class Net(nn.Module):
 ### 4. 学習
 
 #### step1. GPUの設定
-#### step2. 学習パラメータの設定
+
+pytorchではGPUを利用する際には明示的に指定する必要があります．
+
+```python
+GPU = True
+device = torch.device("cuda" if GPU else "cpu")
+
+net = Net()
+net = net.to(device)
+```
+
+#### step2. ハイパーパラメータの設定
+
+誤差関数と最適化手法を定義します．
+
+誤差関数には交差エントロピー，最適化手法にはSGDを利用します．
+
+```python
+import torch.optim as optim
+
+# 誤差関数の定義
+criterion = nn.CrossEntropyLoss().cuda()
+# 最適化手法の定義
+optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)	
+```
+
 #### step3. 学習
 
+本格的に学習を行なっていきます．
+
+学習の手順としては，
+
+1. inputs(画像)，labels(ラベル)を読み込む
+2. 勾配の初期化
+3. モデルに画像を入力
+4. lossの計算
+5. 誤差を逆伝搬
+6. 重みの更新
+
+上記を各エポックごとに行います．
+
+```python
+# 学習を行う
+model.train()
+for epoch in range(10):  # loop over the dataset multiple times
+
+    running_loss = 0.0
+    for i, data in enumerate(trainloader, 0):
+        # get the inputs; data is a list of [inputs, labels]
+        inputs, labels = data
+
+        inputs = torch.tensor(inputs, dtype=torch.float).to(device)
+        labels = torch.tensor(labels, dtype=torch.long).to(device)
+
+        # zero the parameter gradients
+        optimizer.zero_grad()
+
+        # forward + backward + optimize
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        # print statistics
+        running_loss += loss.item()
+        if i % 2000 == 1999:    # print every 2000 mini-batches
+            print('[%d, %5d] loss: %.3f' %
+                  (epoch + 1, i + 1, running_loss / 2000))
+            running_loss = 0.0
+
+print('Finished Training')
+```
+
 #### step4. モデルの保存
+
+予測ステップでも利用できるように学習したモデルを保存しましょう．
+
+```python
+# モデルの保存
+import cloudpickle
+with open('model.pkl', 'wb') as f:
+    cloudpickle.dump(net, f)
+```
 
 ### 5. 予測
 
@@ -163,6 +242,161 @@ Grad-CAMとは，大雑把に言うとCNNの予測の根拠となった箇所を
 >原著: Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization
 >https://arxiv.org/abs/1610.02391
 
+#### GradCAMのクラスを用意
+
+```python
+import cv2
+class GradCam:
+    def __init__(self, model):
+        self.model = model.eval()
+        self.feature = None
+        self.gradient = None
+
+    def save_gradient(self, grad):
+        self.gradient = grad
+
+    def __call__(self, x):
+        image_size = (x.size(-1), x.size(-2))
+        feature_maps = []
+        
+        for i in range(x.size(0)):
+            img = x[i].data.cpu().numpy()
+            img = img - np.min(img)
+            if np.max(img) != 0:
+                img = img / np.max(img)
+
+            feature = x[i].unsqueeze(0)
+            
+            for name, module in self.model.named_children():
+                if name == 'classifier':
+                    feature = feature.view(feature.size(0), -1)
+                feature = module(feature)
+                if name == 'features':
+                    feature.register_hook(self.save_gradient)
+                    self.feature = feature
+                    
+            classes = F.sigmoid(feature)
+            one_hot, _ = classes.max(dim=-1)
+            self.model.zero_grad()
+            one_hot.backward()
+
+            weight = self.gradient.mean(dim=-1, keepdim=True).mean(dim=-2, keepdim=True)
+            
+            mask = F.relu((weight * self.feature).sum(dim=1)).squeeze(0)
+            mask = cv2.resize(mask.data.cpu().numpy(), image_size)
+            mask = mask - np.min(mask)
+            
+            if np.max(mask) != 0:
+                mask = mask / np.max(mask)
+                
+            feature_map = np.float32(cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET))
+            cam = feature_map + np.float32((np.uint8(img.transpose((1, 2, 0)) * 255)))
+            cam = cam - np.min(cam)
+            
+            if np.max(cam) != 0:
+                cam = cam / np.max(cam)
+                
+            feature_maps.append(transforms.ToTensor()(cv2.cvtColor(np.uint8(255 * cam), cv2.COLOR_BGR2RGB)))
+            
+        feature_maps = torch.stack(feature_maps)
+        
+        return feature_maps
+```
+####　可視化の実行
+
+```python
+grad_cam = GradCam(model)
+test_image_tensor = torch.tensor(np.expand_dims(images[0], 0))
+feature_image = grad_cam(test_image_tensor.cuda()).squeeze(dim=0)
+feature_image = transforms.ToPILImage()(feature_image)
+pred_idx = model(test_image_tensor.cuda()).max(1)[1]
+plt.imshow(feature_image.resize((28, 28)))
+```
+
+
 
 ### 2. 畳み込みフィルタの可視化
+
+
+
+```python
+def plot_filters_single_channel_big(t):
+    
+    #setting the rows and columns
+    nrows = t.shape[0]*t.shape[2]
+    ncols = t.shape[1]*t.shape[3]
+    
+    
+    npimg = np.array(t.numpy(), np.float32)
+    npimg = npimg.transpose((0, 2, 1, 3))
+    npimg = npimg.ravel().reshape(nrows, ncols)
+    
+    npimg = npimg.T
+    
+    fig, ax = plt.subplots(figsize=(ncols/10, nrows/200))    
+    imgplot = sns.heatmap(npimg, xticklabels=False, yticklabels=False, cmap='gray', ax=ax, cbar=False)
+
+def plot_filters_single_channel(t):
+    
+    #kernels depth * number of kernels
+    nplots = t.shape[0]*t.shape[1]
+    ncols = 12
+    
+    nrows = 1 + nplots//ncols
+    #convert tensor to numpy image
+    npimg = np.array(t.numpy(), np.float32)
+    
+    count = 0
+    fig = plt.figure(figsize=(ncols, nrows))
+    
+    #looping through all the kernels in each channel
+    for i in range(t.shape[0]):
+        for j in range(t.shape[1]):
+            count += 1
+            ax1 = fig.add_subplot(nrows, ncols, count)
+            npimg = np.array(t[i, j].numpy(), np.float32)
+            npimg = (npimg - np.mean(npimg)) / np.std(npimg)
+            npimg = np.minimum(1, np.maximum(0, (npimg + 0.5)))
+            ax1.imshow(npimg)
+            ax1.set_title(str(i) + ',' + str(j))
+            ax1.axis('off')
+            ax1.set_xticklabels([])
+            ax1.set_yticklabels([])
+   
+    plt.tight_layout()
+    plt.show()
+```
+
+
+
+```python
+# 畳み込みフィルタの可視化
+def plot_weights(model, layer_num, single_channel = True, collated = False):
+  
+  #extracting the model features at the particular layer number
+  layer = model.features[layer_num]
+  
+  #checking whether the layer is convolution layer or not 
+  if isinstance(layer, nn.Conv2d):
+    #getting the weight tensor data
+    weight_tensor = model.features[layer_num].weight.data.cpu()
+    
+    if single_channel:
+      if collated:
+        plot_filters_single_channel_big(weight_tensor)
+      else:
+        plot_filters_single_channel(weight_tensor)
+        
+    else:
+      if weight_tensor.shape[1] == 3:
+        plot_filters_multi_channel(weight_tensor)
+      else:
+        print("Can only plot weights with three channels with single channel = False")
+        
+  else:
+    print("Can only visualize layers which are convolutional")
+        
+#visualize weights for alexnet - first conv layer
+plot_weights(model, 0, single_channel = True)
+```
 
