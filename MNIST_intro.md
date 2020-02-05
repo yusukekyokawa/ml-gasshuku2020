@@ -39,6 +39,8 @@ LeNetを実装してください．
 ### 1. Grad-CAM
 Grad-CAMとは，大雑把に言うとCNNの予測の根拠となった箇所をヒートマップで表示する技術です．
 
+![grad-cam](assets/grad-cam.png)
+
 >原著: Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization
 >https://arxiv.org/abs/1610.02391
 
