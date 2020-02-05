@@ -29,7 +29,7 @@ pytorchではindex[データ数]のように管理をします．
 <details>
 <summary>コードはこちら</summary>  
 <p>  
-  
+
 ```python
 # 1. ライブラリのimport
 import torch
@@ -73,7 +73,7 @@ classes = tuple(np.linspace(0, 9, 10, dtype=np.uint8))
 <details>
 <summary>コードはこちら</summary>
 <p>
-  
+
 ```python
 # データの可視化
 import matplotlib.pyplot as plt
@@ -103,18 +103,42 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 </details>
 
 ### 3. モデルの定義
-LeNetを実装してください．
-
 | Layer | カーネルサイズ | フィルタ数 |  ストライド| パディング |  活性化関数 |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| Input | 32 x 32 x 3(入力サイズ) |
-| Convolution | 5 x 5 |  6 | 1 | 0 | - |
-| MaxPooling | 2 x 2 | - | 2 | 0 | sigmoid |
-| Convolution | 5 x 5 | 16 | 1 | 0 | - |
-| MaxPooling | 2 x 2 | - | 2 | 0 | sigmoid |
-| MultiLayerPerceptron | 120 | - | - | - | - | - |
-| MultiLayerPerceptron |  64 | - | - | - | - | - |
-| MultiLayerPerceptron | 2 (クラス) | - | - | - | - | Softmax|
+| Input | 28 x 28 x 1(入力サイズ) |||||
+| Convolution | 3 x 3 | 32 | 1 | 0 | ReLU |
+| Convolution | 3 x 3 | 64 | 1 | 0 | ReLU |
+| MaxPooling | 2 x 2 | - | 1 | 0 | - |
+| Dropout | - | - | - | - | - |
+| MultiLayerPerceptron | 128 | - | - | - | ReLU |
+| Dropout | - | - | - | - | - |
+| MultiLayerPerceptron | 10 (クラス) | - | - | - | - |
+
+```python
+# モデル定義
+class Net(nn.Module):
+  def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3) # 28x28x32 -> 26x26x32
+        self.conv2 = nn.Conv2d(32, 64, 3) # 26x26x64 -> 24x24x64 
+        self.pool = nn.MaxPool2d(2, 2) # 24x24x64 -> 12x12x64
+        self.dropout1 = nn.Dropout2d()
+        self.fc1 = nn.Linear(12 * 12 * 64, 128)
+        self.dropout2 = nn.Dropout2d()
+        self.fc2 = nn.Linear(128, 10)
+
+  def forward(self, x):
+      x = F.relu(self.conv1(x))
+      x = self.pool(F.relu(self.conv2(x)))
+      x = self.dropout1(x)
+      x = x.view(-1, 12 * 12 * 64)
+      x = F.relu(self.fc1(x))
+      x = self.dropout2(x)
+      x = self.fc2(x)
+      return x
+```
+
+
 
 ### 4. 学習
 
