@@ -1,0 +1,19 @@
+version: '2.3'
+services:
+  anogan:
+    build:
+      context: ./Dockerfile
+      dockerfile: Dockerfile-tensorflow-gpu
+    container_name: ml-gasshuku
+    runtime: nvidia
+    command: /bin/bash
+    command: jupyter notebook --port 9999  --allow-root --NotebookApp.token='' --NotebookApp.password=''
+    ports:
+      - "7000:7000"
+      - "9999:9999"
+    tty: true
+    volumes:
+      - ./Project:/Project
+      - ../Data:/Data
+# - /mnt/DsmlLab:/mnt/DsmlLab
+      
