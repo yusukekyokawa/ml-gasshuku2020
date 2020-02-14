@@ -244,6 +244,9 @@ Grad-CAMとは，大雑把に言うとCNNの予測の根拠となった箇所を
 
 #### GradCAMのクラスを用意
 
+
+今回利用したコードはこちらを使用しています．
+https://www.noconote.work/entry/2019/01/12/231723
 ```python
 import cv2
 class GradCam:
