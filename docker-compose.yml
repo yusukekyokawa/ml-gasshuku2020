@@ -1,6 +1,6 @@
 version: '2.3'
 services:
-  anogan:
+  ml:
     build:
       context: ./Dockerfile
       dockerfile: Dockerfile-tensorflow-gpu
