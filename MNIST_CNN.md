@@ -247,6 +247,9 @@ Grad-CAMとは，大雑把に言うとCNNの予測の根拠となった箇所を
 
 今回利用したコードはこちらを使用しています．
 https://www.noconote.work/entry/2019/01/12/231723
+
+他の可視化手法については
+https://github.com/utkuozbulak/pytorch-cnn-visualizations
 ```python
 import cv2
 class GradCam:
