@@ -1,6 +1,6 @@
 absl-py==0.5.0
 astor==0.7.1
-bottle==0.12.13
+bottle==0.12.20
 cloudpickle==0.6.1
 cycler==0.10.0
 Cython==0.29
