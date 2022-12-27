@@ -307,7 +307,7 @@ scs==2.1.1.post2
 seaborn==0.10.0
 semantic-version==2.8.4
 Send2Trash==1.5.0
-setuptools==45.1.0
+setuptools==65.5.1
 setuptools-git==1.2
 Shapely==1.7.0
 simplegeneric==0.8.1
